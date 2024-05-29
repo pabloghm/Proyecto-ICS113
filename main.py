@@ -1,4 +1,5 @@
 import gurobipy as gp
+from gurobipy import quicksum, Model
 
 '''Cagar datos de los archivos csv que generemos en diccionarios para no tener problemas de índices'''
 
@@ -89,7 +90,7 @@ modelo.update()
             for k in K:
                 for t in T[1:]:
                     modelo.addConstr(cc * 0.5 * CB[c,j,k,t] <= gp.quicksum(Q[i,c,j,k,t] for i in I), name="R8")'la cantidad de libros desde la bodega al colegio no puede ser menor a la mitad de la capacidad de carga del camión'
-
+'''OJO falta crear parámetro cc R8 y R9'''
     '''Restriccion 9'''
     for c in C:
         for j in J:
@@ -103,12 +104,13 @@ modelo.update()
                 modelo.addConstr(gp.quicksum(M[i,j,t,k] for k in K) <= Y[i,j,t], name="R10")'la cantidad de libros llevados desde la bodega no puede ser mayor que la cantidad almacenada en la bodega'
     
     '''Restriccion 11'''
-    modelo.addConstr(gp.quicksum(H[t] for t in T), name="R11")'la fabrica no puede funcionar más días por sobre los días hábiles'
+    modelo.addConstr(gp.quicksum(H[t] for t in T)<=40, name="R11")'la fabrica no puede funcionar más días por sobre los días hábiles'
 
     '''Restriccion 12'''
     sab_dom = [6, 7, 13, 14, 20, 21, 27, 28, 34, 35, 41, 42, 48, 49, 55, 56, 62]
     for t in sab_dom:
         modelo.addConstr(H[t]=0, name = "R12") 'sábado y domingo no se trabaja'
+        
     '''Restriccion 13'''
     for i in I:
         for t in T:
@@ -186,5 +188,6 @@ modelo.update()
                     modelo.addConstr(G[i, c, j, t] >= 0, name='G')
 except Exception as error:
     print(error)
-FO = quicksum(X[i,t]*)
+FO = (quicksum(X[i,t]*c[i][t] + GAMMA[i,t]*cr[i][t] for i in I for t in T) + quicksum(R[w,t]*cw for w in W for t in T) + quicksum(e[j]*CA[c,j,t]*cd[t] for c in C for j in J for t in T) + quicksum(e[j][k]*CB[c,j,k,t]*cd[t] for c in C for j in J for t in T for k in K) + quicksum(g[j][t]*Y[i,j,t] for i in I for j in J for t in T) + quicksum(c*H[t] for t in T))
+'''Indexé los parámetros como listas. Hay que ver si los trabajamos así después'''
 modelo.update()
