@@ -5,6 +5,8 @@ import gurobipy as gp
 cantidad_dias = 60
 cantidad_cursos = 12
 cantidad_libros = 48
+cc = 1200 #capacidad de carga del camion
+V = 99999999999 #Monto lo suficientemente grande
 
 '''No tenemos definido una cantidad de camiones formalmente'''
 cantidad_camiones = 20
@@ -104,7 +106,7 @@ try:
     modelo.addConstr(gp.quicksum(H[t] for t in T), name='la fabrica no puede funcionar más días por sobre los días hábiles')
 
     '''Restriccion 12'''
-
+     #FALTA RESTRICCION
 
     '''Restriccion 13'''
     for i in I:
