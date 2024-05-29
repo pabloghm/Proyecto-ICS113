@@ -40,6 +40,95 @@ try:
     H = modelo.addVars(T, vtype=gp.GRB.BINARY, name='H')
 
     '''Restricciones'''
+    '''Restriccion 1'''
+    for i in I:
+        for j in J:
+            modelo.addConstr(Y[i,j,0] == 0, name='La bodega parte vacía')
+    
+    '''Restriccion 2'''
+    for j in J:
+        for t in T:
+            modelo.addConstr(Y[i,j,t] <= q[j], name='No sobrepasar la capacidad de almacenaje por bodega')
+    
+    '''Restriccion 3'''
+    for i in I:
+        for j in J:
+            for t in T:
+                modelo.addConstr(Y[i,j,t] == Y[i,j,t-1] + B[i,j,t] - gp.quicksum(M[i,j,t,k] for j in J), name='Conservacion de inventario en la bodega')
+
+    '''Restriccion 4'''
+    for i in I:
+        for k in K:
+            for t in T:
+                for j in J:
+                    modelo.addConstr(Z[i,k,t] == Z[i,k,t-1] + M[i,j,t,k] , name='Conservacion de inventario en el colegio')
+    
+    '''Restriccion 5'''
+    for i in I:
+        for t in T:
+            modelo.addConstr(X[i,t] + GAMMA[i,t] <= s[i,t], name='cantidad producida de libro no puede ser mayor a la capacidad de produccion')
+    
+    '''Restriccion 6'''
+    for c in C:
+        for j in J:
+            for k in K:
+                for t in T:
+                    modelo.addConstr(gp.quicksum(Q[i,c,j,k,t] for i in I) <= cc * CB[c,j,k,t], name='la cantidad de libros desde la bodega al colegio no puede ser mayor a la capacidad de carga del camión')
+
+    '''Restriccion 7'''
+    for c in C:
+        for j in J:
+            for t in T:
+                modelo.addConstr(gp.quicksum(G[i,c,j,t] for i in I) <= cc * CA[c,j,t], name='la cantidad de libro desde la fabrica a la bodega no puede ser mayor a la capacidad de carga del camión')
+
+    '''Restriccion 8'''
+    for c in C:
+        for j in J:
+            for k in K:
+                for t in T:
+                    modelo.addConstr(cc * 0.5 * CB[c,j,k,t] <= gp.quicksum(Q[i,c,j,k,t] for i in I), name='la cantidad de libros desde la bodega al colegio no puede ser menor a la mitad de la capacidad de carga del camión')
+
+    '''Restriccion 9'''
+    for c in C:
+        for j in J:
+            for t in T:
+                modelo.addConstr(cc * 0.5* CA[c,j,t] <= gp.quicksum(G[i,c,j,t] for i in I), name='la cantidad de libro desde la fabrica a la bodega no puede ser menor a la mitad de la capacidad de carga del camión')
+
+    '''Restriccion 10'''
+    for i in I:
+        for j in J:
+            for t in T:
+                modelo.addConstr(gp.quicksum(M[i,j,t,k] for k in K) <= Y[i,j,t], name='la cantidad de libros llevados desde la bodega no puede ser mayor que la cantidad almacenada en la bodega')
+    
+    '''Restriccion 11'''
+    modelo.addConstr(gp.quicksum(H[t] for t in T), name='la fabrica no puede funcionar más días por sobre los días hábiles')
+
+    '''Restriccion 12'''
+
+
+    '''Restriccion 13'''
+    for i in I:
+        for t in T:
+            modelo.addConstr(F[i,t] <= H[t], name='No se producen libros los días que no funcinoe la fabrica')
+    
+    '''Restriccion 14'''
+    for i in I: 
+        for t in T:
+            modelo.addConstr(gp.quicksum(B[i,j,t] for j in J) == X[i,t] + GAMMA[i,t], name='la cantidad de librosque fueronn dejados en la bodega es igaul a la cantidad producida')
+
+    '''Restriccion 15'''
+    for i in I:
+        for t in T:
+            modelo.addConstr(X[i,t] + GAMMA[i,t] <= V * F[i,t], name='la cantidad de libro a producir en el dia no puede ser mayor a un monto V')
+
+    '''Restriccion 16'''
+    for i in I:
+        for k in K:
+            modelo.addConstr(gp.quicksum(a[i,k,n] for n in N) == gp.quicksum(gp.quicksum(M[i,j,k,t] for t in T) for j in J), name='cumplir la necesidad de libros por colegio' )
+    
+    '''Restriccion 17'''
+    for i in I:
+        modelo.addConstr(w[i] <= gp.quicksum(GAMMA[i,t] for t in T), name='cumplir la cantidad minima de libros reciclados')
 
     '''Naturaleza variables'''
 
