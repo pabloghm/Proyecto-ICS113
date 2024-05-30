@@ -106,7 +106,9 @@ try:
     modelo.addConstr(gp.quicksum(H[t] for t in T), name='la fabrica no puede funcionar más días por sobre los días hábiles')
 
     '''Restriccion 12'''
-     #FALTA RESTRICCION
+    sab_dom = [6,7,13,14,20,21,27,28,34,35,41,42,48,49,55,56,62]
+    for t in sab_dom:
+        modelo.addConstr(H[t] == 0, name='no se trabaja durante el fin de semana')
 
     '''Restriccion 13'''
     for i in I:
