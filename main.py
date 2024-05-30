@@ -201,6 +201,7 @@ try:
     modelo.update()
     modelo.setObjective(FO, gp.GRB.MAXIMIZE)
     modelo.optimize()
+    modelo.print("ObjVal")
     '''
 
 except Exception as error:
