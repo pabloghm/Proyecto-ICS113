@@ -30,7 +30,7 @@ if __name__ == '__main__':
     load_dotenv()
     apiKey = os.getenv('GOOGLE_API_KEY')
     lugar_origen = {'lat': -33.53751529253465, 'lng': -70.66434475541553}  # Metro La Cisterna
-    lugar_destino = {'lat': -33.498587907748245, 'lng': -70.6134084324915}  # Campus San Joaquin
+    lugar_destino = {'lat': -33.498587907748245, 'lng': -70.6134084324915}  # Campus San Joaquín
 
     distancia, duracion = obtener_distancia(lugar_origen, lugar_destino, apiKey)
 
