@@ -1,5 +1,4 @@
 import gurobipy as gp
-from gurobipy import quicksum, Model
 
 '''Cagar datos de los archivos csv que generemos en diccionarios para no tener problemas de índices'''
 
@@ -27,6 +26,7 @@ try:
     modelo = gp.Model("Distribuidora Edubooks")
 
     '''Variables de decisión'''
+
     X = modelo.addVars(I, T, vtype=gp.GRB.CONTINUOUS, name='X', lb=0)
     GAMMA = modelo.addVars(I, T, vtype=gp.GRB.CONTINUOUS, name='GAMMA', lb=0)
     Y = modelo.addVars(I, J, T, vtype=gp.GRB.CONTINUOUS, name='Y', lb=0)
@@ -40,102 +40,106 @@ try:
     F = modelo.addVars(I, T, vtype=gp.GRB.BINARY, name='F')
     H = modelo.addVars(T, vtype=gp.GRB.BINARY, name='H')
 
-modelo.update()
-    
+    modelo.update()
+
     '''Restricciones'''
+
     '''Restriccion 1'''
     for i in I:
         for j in J:
-            modelo.addConstr(Y[i,j,0] == 0, name="R1")'La bodega parte vacía'
-    
+            modelo.addConstr(Y[i, j, 0] == 0, name="R1")
+
     '''Restriccion 2'''
-    for j in J:
-        for t in T[1:]:
-            modelo.addConstr(Y[i,j,t] <= q[j], name="R2")'No sobrepasar la capacidad de almacenaje por bodega'
-    
+    for i in I:
+        for j in J:
+            for t in T:
+                modelo.addConstr(Y[i, j, t] <= q[j], name="R2")
+
     '''Restriccion 3'''
     for i in I:
         for j in J:
-            for t in T[1:]:
-                modelo.addConstr(Y[i,j,t] == Y[i,j,t-1] + B[i,j,t] - gp.quicksum(M[i,j,t,k] for j in J), name="R3")'Conservacion de inventario en la bodega'
+            for t in T:
+                modelo.addConstr(Y[i, j, t] == Y[i, j, t - 1] + B[i, j, t] - gp.quicksum(M[i, j, t, k] for j in J),
+                                 name="R3")
 
     '''Restriccion 4'''
     for i in I:
         for k in K:
-            for t in T[1:]:
+            for t in T:
                 for j in J:
-                    modelo.addConstr(Z[i,k,t] == Z[i,k,t-1] + M[i,j,t,k] , name="R4")'Conservacion de inventario en el colegio'
-    
+                    modelo.addConstr(Z[i, k, t] == Z[i, k, t - 1] + M[i, j, t, k], name="R4")
+
     '''Restriccion 5'''
     for i in I:
-        for t in T[1:]:
-            modelo.addConstr(X[i,t] + GAMMA[i,t] <= s[i,t], name="R5")'cantidad producida de libro no puede ser mayor a la capacidad de produccion'
-    
+        for t in T:
+            modelo.addConstr(X[i, t] + GAMMA[i, t] <= s[i, t], name="R5")
+
     '''Restriccion 6'''
     for c in C:
         for j in J:
             for k in K:
-                for t in T[1:]:
-                    modelo.addConstr(gp.quicksum(Q[i,c,j,k,t] for i in I) <= cc * CB[c,j,k,t], name="R6")'la cantidad de libros desde la bodega al colegio no puede ser mayor a la capacidad de carga del camión'
+                for t in T:
+                    modelo.addConstr(gp.quicksum(Q[i, c, j, k, t] for i in I) <= cc * CB[c, j, k, t], name="R6")
 
     '''Restriccion 7'''
     for c in C:
         for j in J:
-            for t in T[1:]:
-                modelo.addConstr(gp.quicksum(G[i,c,j,t] for i in I) <= cc * CA[c,j,t], name="R7")'la cantidad de libro desde la fabrica a la bodega no puede ser mayor a la capacidad de carga del camión'
+            for t in T:
+                modelo.addConstr(gp.quicksum(G[i, c, j, t] for i in I) <= cc * CA[c, j, t], name="R7")
 
     '''Restriccion 8'''
     for c in C:
         for j in J:
             for k in K:
-                for t in T[1:]:
-                    modelo.addConstr(cc * 0.5 * CB[c,j,k,t] <= gp.quicksum(Q[i,c,j,k,t] for i in I), name="R8")'la cantidad de libros desde la bodega al colegio no puede ser menor a la mitad de la capacidad de carga del camión'
-'''OJO falta crear parámetro cc R8 y R9'''
+                for t in T:
+                    modelo.addConstr(cc * 0.5 * CB[c, j, k, t] <= gp.quicksum(Q[i, c, j, k, t] for i in I), name="R8")
+
     '''Restriccion 9'''
     for c in C:
         for j in J:
-            for t in T[1:]:
-                modelo.addConstr(cc * 0.5* CA[c,j,t] <= gp.quicksum(G[i,c,j,t] for i in I), name="R9")'la cantidad de libro desde la fabrica a la bodega no puede ser menor a la mitad de la capacidad de carga del camión'
+            for t in T:
+                modelo.addConstr(cc * 0.5 * CA[c, j, t] <= gp.quicksum(G[i, c, j, t] for i in I), name="R9")
 
     '''Restriccion 10'''
     for i in I:
         for j in J:
             for t in T:
-                modelo.addConstr(gp.quicksum(M[i,j,t,k] for k in K) <= Y[i,j,t], name="R10")'la cantidad de libros llevados desde la bodega no puede ser mayor que la cantidad almacenada en la bodega'
-    
+                modelo.addConstr(gp.quicksum(M[i, j, t, k] for k in K) <= Y[i, j, t], name="R10")
+
     '''Restriccion 11'''
-    modelo.addConstr(gp.quicksum(H[t] for t in T)<=40, name="R11")'la fabrica no puede funcionar más días por sobre los días hábiles'
+    modelo.addConstr(gp.quicksum(H[t] for t in T) <= 40, name="R11")
 
     '''Restriccion 12'''
     sab_dom = [6, 7, 13, 14, 20, 21, 27, 28, 34, 35, 41, 42, 48, 49, 55, 56, 62]
     for t in sab_dom:
-        modelo.addConstr(H[t]=0, name = "R12") 'sábado y domingo no se trabaja'
-        
+        modelo.addConstr(H[t] == 0, name="R12")
+
     '''Restriccion 13'''
     for i in I:
         for t in T:
-            modelo.addConstr(F[i,t] <= H[t], name="R13")'No se producen libros los días que no funcinoe la fabrica'
-    
+            modelo.addConstr(F[i, t] <= H[t], name="R13")
+
     '''Restriccion 14'''
-    for i in I: 
+    for i in I:
         for t in T:
-            modelo.addConstr(gp.quicksum(B[i,j,t] for j in J) == X[i,t] + GAMMA[i,t], name="R14")'la cantidad de librosque fueronn dejados en la bodega es igaul a la cantidad producida'
+            modelo.addConstr(gp.quicksum(B[i, j, t] for j in J) == X[i, t] + GAMMA[i, t], name="R14")
 
     '''Restriccion 15'''
     for i in I:
         for t in T:
-            modelo.addConstr(X[i,t] + GAMMA[i,t] <= V * F[i,t], name="R15")'la cantidad de libro a producir en el dia no puede ser mayor a un monto V'
+            modelo.addConstr(X[i, t] + GAMMA[i, t] <= V * F[i, t], name="R15")
 
     '''Restriccion 16'''
     for i in I:
         for k in K:
-            modelo.addConstr(gp.quicksum(a[i,k,n] for n in N) == gp.quicksum(gp.quicksum(M[i,j,k,t] for t in T) for j in J), name = "R16" )'cumplir necesidad de cada tipo de libro para cada colegio'
+            modelo.addConstr(
+                gp.quicksum(a[i, k, n] for n in N) == gp.quicksum(gp.quicksum(M[i, j, k, t] for t in T) for j in J),
+                name="R16")
     '''Restricción 17'''
     for i in I:
-        modelo.addConstr(w[i] <= quicksum(GAMMA[i,t] for t in T), name="R17")'cumplir la cantidad mínima a producir de libros reciclados' '''OJO falta crear el parámetro w[i]'''
+        modelo.addConstr(w[i] <= gp.quicksum(GAMMA[i, t] for t in T), name="R17")
 
     '''Naturaleza variables'''
-'''quizá no es necesario teniendo lb=0 en la definición de las variables'''
 
     '''Para variable X'''
     for i in I:
@@ -149,7 +153,7 @@ modelo.update()
 
     '''Para variable Y'''
     for i in I:
-        for j in j:
+        for j in J:
             for t in T:
                 modelo.addConstr(Y[i, j, t] >= 0, name='Y')
 
@@ -186,10 +190,17 @@ modelo.update()
             for j in J:
                 for t in T:
                     modelo.addConstr(G[i, c, j, t] >= 0, name='G')
+
+    '''FO = (quicksum(X[i,t]*c[i][t] + GAMMA[i,t]*cr[i][t] for i in I for t in T) + quicksum(R[w,t]*cw for w in W for 
+    t in T) + quicksum(e[j]*CA[c,j,t]*cd[t] for c in C for j in J for t in T) + quicksum(e[j][k]*CB[c,j,k, 
+    t]*cd[t] for c in C for j in J for t in T for k in K) + quicksum(g[j][t]*Y[i,j,t] for i in I for j in J for t in 
+    T) + quicksum(c*H[t] for t in T))'''
+
+    '''
+    modelo.update()
+    modelo.setObjective(FO, gp.GRB.MAXIMIZE)
+    modelo.optimize()
+    '''
+
 except Exception as error:
     print(error)
-FO = (quicksum(X[i,t]*c[i][t] + GAMMA[i,t]*cr[i][t] for i in I for t in T) + quicksum(R[w,t]*cw for w in W for t in T) + quicksum(e[j]*CA[c,j,t]*cd[t] for c in C for j in J for t in T) + quicksum(e[j][k]*CB[c,j,k,t]*cd[t] for c in C for j in J for t in T for k in K) + quicksum(g[j][t]*Y[i,j,t] for i in I for j in J for t in T) + quicksum(c*H[t] for t in T))
-'''Indexé los parámetros como listas. Hay que ver si los trabajamos así después'''
-modelo.update()
-modelo.setObjective(FO, GRB.MAXIMIZE)
-modelo.optimize()
