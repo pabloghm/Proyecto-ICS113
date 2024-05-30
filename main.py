@@ -2,11 +2,17 @@ import gurobipy as gp
 
 '''Cagar datos de los archivos csv que generemos en diccionarios para no tener problemas de índices'''
 
+'''Capacidad bodega'''
+
 cantidad_dias = 60
 cantidad_cursos = 12
 cantidad_libros = 48
-cc = 1200 #capacidad de carga del camion
-V = 99999999999 #Monto lo suficientemente grande
+
+'''Capacidad de carga camiones (En libros) '''
+cc = 37500
+
+'''Monto lo suficientemente grande'''
+V = 99999999999
 
 '''No tenemos definido una cantidad de camiones formalmente'''
 cantidad_camiones = 20
@@ -115,7 +121,7 @@ try:
     sab_dom = [6, 7, 13, 14, 20, 21, 27, 28, 34, 35, 41, 42, 48, 49, 55, 56, 62]
     for t in sab_dom:
         modelo.addConstr(H[t] == 0, name="R12")
-    sab_dom = [6,7,13,14,20,21,27,28,34,35,41,42,48,49,55,56,62]
+    sab_dom = [6, 7, 13, 14, 20, 21, 27, 28, 34, 35, 41, 42, 48, 49, 55, 56, 62]
     for t in sab_dom:
         modelo.addConstr(H[t] == 0, name='no se trabaja durante el fin de semana')
 
@@ -137,7 +143,9 @@ try:
     '''Restriccion 16'''
     for i in I:
         for k in K:
-            modelo.addConstr(gp.quicksum(a[i,k,n] for n in N) == gp.quicksum(gp.quicksum(M[i,j,k,t] for t in T) for j in J) )
+            modelo.addConstr(
+                gp.quicksum(a[i, k, n] for n in N) == gp.quicksum(gp.quicksum(M[i, j, k, t] for t in T) for j in J),
+                name="R16")
 
     '''Naturaleza variables'''
 
