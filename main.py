@@ -191,7 +191,8 @@ try:
                 for t in T:
                     modelo.addConstr(G[i, c, j, t] >= 0, name='G')
 
-    '''FO = (quicksum(X[i,t]*c[i][t] + GAMMA[i,t]*cr[i][t] for i in I for t in T) + quicksum(R[w,t]*cw for w in W for 
+    '''
+    FO = (quicksum(X[i,t]*c[i][t] + GAMMA[i,t]*cr[i][t] for i in I for t in T) + quicksum(R[w,t]*cw for w in W for 
     t in T) + quicksum(e[j]*CA[c,j,t]*cd[t] for c in C for j in J for t in T) + quicksum(e[j][k]*CB[c,j,k, 
     t]*cd[t] for c in C for j in J for t in T for k in K) + quicksum(g[j][t]*Y[i,j,t] for i in I for j in J for t in 
     T) + quicksum(c*H[t] for t in T))'''
