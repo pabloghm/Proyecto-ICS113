@@ -2,6 +2,11 @@ import gurobipy as gp
 
 '''Cagar datos de los archivos csv que generemos en diccionarios para no tener problemas de índices'''
 
+
+'''Cantidad míma de libros reciclados'''
+w = 400
+
+
 '''Capacidad bodega'''
 
 cantidad_dias = 60
@@ -75,7 +80,8 @@ try:
         for k in K:
             for t in T:
                 for j in J:
-                    modelo.addConstr(Z[i, k, t] == Z[i, k, t - 1] + M[i, j, t, k], name="R4")
+                    modelo.addConstr(
+                        Z[i, k, t] == Z[i, k, t - 1] + M[i, j, t, k], name="R4")
 
     '''Restriccion 5'''
     for i in I:
@@ -87,43 +93,51 @@ try:
         for j in J:
             for k in K:
                 for t in T:
-                    modelo.addConstr(gp.quicksum(Q[i, c, j, k, t] for i in I) <= cc * CB[c, j, k, t], name="R6")
+                    modelo.addConstr(gp.quicksum(
+                        Q[i, c, j, k, t] for i in I) <= cc * CB[c, j, k, t], name="R6")
 
     '''Restriccion 7'''
     for c in C:
         for j in J:
             for t in T:
-                modelo.addConstr(gp.quicksum(G[i, c, j, t] for i in I) <= cc * CA[c, j, t], name="R7")
+                modelo.addConstr(gp.quicksum(
+                    G[i, c, j, t] for i in I) <= cc * CA[c, j, t], name="R7")
 
     '''Restriccion 8'''
     for c in C:
         for j in J:
             for k in K:
                 for t in T:
-                    modelo.addConstr(cc * 0.5 * CB[c, j, k, t] <= gp.quicksum(Q[i, c, j, k, t] for i in I), name="R8")
+                    modelo.addConstr(
+                        cc * 0.5 * CB[c, j, k, t] <= gp.quicksum(Q[i, c, j, k, t] for i in I), name="R8")
 
     '''Restriccion 9'''
     for c in C:
         for j in J:
             for t in T:
-                modelo.addConstr(cc * 0.5 * CA[c, j, t] <= gp.quicksum(G[i, c, j, t] for i in I), name="R9")
+                modelo.addConstr(
+                    cc * 0.5 * CA[c, j, t] <= gp.quicksum(G[i, c, j, t] for i in I), name="R9")
 
     '''Restriccion 10'''
     for i in I:
         for j in J:
             for t in T:
-                modelo.addConstr(gp.quicksum(M[i, j, t, k] for k in K) <= Y[i, j, t], name="R10")
+                modelo.addConstr(gp.quicksum(M[i, j, t, k]
+                                 for k in K) <= Y[i, j, t], name="R10")
 
     '''Restriccion 11'''
     modelo.addConstr(gp.quicksum(H[t] for t in T) <= 40, name="R11")
 
     '''Restriccion 12'''
-    sab_dom = [6, 7, 13, 14, 20, 21, 27, 28, 34, 35, 41, 42, 48, 49, 55, 56, 62]
+    sab_dom = [6, 7, 13, 14, 20, 21, 27, 28,
+               34, 35, 41, 42, 48, 49, 55, 56, 62]
     for t in sab_dom:
         modelo.addConstr(H[t] == 0, name="R12")
-    sab_dom = [6, 7, 13, 14, 20, 21, 27, 28, 34, 35, 41, 42, 48, 49, 55, 56, 62]
+    sab_dom = [6, 7, 13, 14, 20, 21, 27, 28,
+               34, 35, 41, 42, 48, 49, 55, 56, 62]
     for t in sab_dom:
-        modelo.addConstr(H[t] == 0, name='no se trabaja durante el fin de semana')
+        modelo.addConstr(
+            H[t] == 0, name='no se trabaja durante el fin de semana')
 
     '''Restriccion 13'''
     for i in I:
@@ -133,7 +147,8 @@ try:
     '''Restriccion 14'''
     for i in I:
         for t in T:
-            modelo.addConstr(gp.quicksum(B[i, j, t] for j in J) == X[i, t] + GAMMA[i, t], name="R14")
+            modelo.addConstr(gp.quicksum(
+                B[i, j, t] for j in J) == X[i, t] + GAMMA[i, t], name="R14")
 
     '''Restriccion 15'''
     for i in I:
@@ -144,7 +159,8 @@ try:
     for i in I:
         for k in K:
             modelo.addConstr(
-                gp.quicksum(a[i, k, n] for n in N) == gp.quicksum(gp.quicksum(M[i, j, k, t] for t in T) for j in J),
+                gp.quicksum(a[i, k, n] for n in N) == gp.quicksum(
+                    gp.quicksum(M[i, j, k, t] for t in T) for j in J),
                 name="R16")
 
     '''Naturaleza variables'''
