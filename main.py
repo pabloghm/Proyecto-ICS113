@@ -59,7 +59,7 @@ try:
     for i in I:
         for j in J:
             for t in T:
-                modelo.addConstr(Y[i, j, t] == Y[i, j, t - 1] + B[i, j, t] - gp.quicksum(M[i, j, t, k] for j in J),
+                modelo.addConstr(Y[i, j, t] == Y[i, j, t - 1] + B[i, j, t] - gp.quicksum(M[i, j, t, k] for k in K),
                                  name="R3")
 
     '''Restriccion 4'''
